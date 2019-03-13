@@ -155,10 +155,13 @@ def graph_data_to_graph_list(path, db):
 
 #node label from node_id
 def node_label_vector(graph, node_id):
-    node = graph.nodes(data = True)[node_id]
-    if "label" in node.keys():
-        label = node["label"]
-        return label
+    if graph.has_node(node_id):
+        node = graph.nodes(data = True)[node_id]
+        if "label" in node.keys():
+            label = node["label"]
+            return label
+        else:
+            return []
     else:
         return []
 
@@ -208,10 +211,13 @@ def nodes_attribute_matrix(graph):
 
 #edge label from node_ids
 def edge_label(graph, node_i, node_j):
-    edge = graph.get_edge_data(node_i, node_j)
-    if "label" in edge.keys():
-        label = edge["label"]
-        return label
+    if graph.has_edge(node_i, node_j):
+        edge = graph.get_edge_data(node_i, node_j)
+        if "label" in edge.keys():
+            label = edge["label"]
+            return label
+        else:
+            return []
     else:
         return []
 
