@@ -4,7 +4,7 @@
 
   [https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets)
 
-and outputs them as a list of python networkx graphs.
+and outputs them as a list of python networkx graphs, see the details below.
 
 **Functions:**
 
