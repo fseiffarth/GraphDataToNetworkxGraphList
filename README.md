@@ -6,7 +6,7 @@ https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets
 
 and outputs them as a list of python networkx graphs.
 
-Funktions:
+Functions:
 
 graph_data_to_graph_list(path, db)
   
