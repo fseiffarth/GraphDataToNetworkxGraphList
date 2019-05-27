@@ -42,7 +42,7 @@ edge_attribute_matrix(graph, node_i, node_j)
 
 Python example:
 
-        path = "path_to_dbs"
+        path = "path_to_dbs/"
         db = "DBLP_v1"
         graph_data = graph_data_to_graph_list(path, db)
         graph_list, graph_labels, graph_attributes = graph_data
