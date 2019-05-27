@@ -10,12 +10,12 @@ def getLabel(objectData):
         # here, we just return the first value as string
         return str(int(objectData['label'][0]))
     else:
-        return 'None'
+        return '0'
 
 
 def nxGraphToText(index, g, label, output):
     vertexLabels = [getLabel(g.nodes[v]) for v in g.nodes]
-    edges = [' '.join([str(e[0]), str(e[1]), getLabel(g.edges[e])]) for e in g.edges]
+    edges = [' '.join([str(e[0] + 1), str(e[1] + 1), getLabel(g.edges[e])]) for e in g.edges]
 
     output.write(' '.join(['#', str(index), str(label), str(g.number_of_nodes()), str(g.number_of_edges())]))
     output.write('\n')
