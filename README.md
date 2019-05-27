@@ -37,9 +37,11 @@ and outputs them as a list of python networkx graphs, see the details below.
 
 
 
+
+=======
 **Python example:**
 ```
-path = "path_to_dbs"
+path = "path_to_dbs/"
 db = "MUTAG"
 graph_data = graph_data_to_graph_list(path, db)
 graph_list, graph_labels, graph_attributes = graph_data
