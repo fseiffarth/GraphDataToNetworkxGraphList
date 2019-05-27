@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 
 import GraphDataToGraphList as d2l
@@ -45,3 +47,17 @@ def convertGraphList2AIDSFormat(path, db, output=sys.stdout):
     for i, g, l in zip(indices, graphs, labels):
         nxGraphToText(i, g, l, output)
     output.writelines('$\n')
+
+
+if __name__ == '__main__':
+    if len(sys.argv) > 4 or len(sys.argv) < 3:
+        sys.stderr.write('nx2aids.py: incorrect number of arguments.\n'
+                         'Usage: ' + sys.argv[0] + ' path_to_db/ dataset_name [output_file]\n'
+                         '(was: ' + ' '.join(sys.argv) + ')\n')
+    if len(sys.argv) == 4:
+        out = open(sys.argv[3], 'w')
+        convertGraphList2AIDSFormat(sys.argv[1], sys.argv[2], out)
+        out.close()
+    if len(sys.argv) == 3:
+        convertGraphList2AIDSFormat(sys.argv[1], sys.argv[2])
+
