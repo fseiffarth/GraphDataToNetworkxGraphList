@@ -1,48 +1,48 @@
 # GraphDataToNetworkxGraphList
 
-Reads graph data from:
+**Reads graph data from:**
 
-https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets
+  [https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets](https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets)
 
-and outputs them as a list of python networkx graphs.
+and outputs them as a list of python networkx graphs, see the details below.
 
-Functions:
+**Functions:**
 
-graph_data_to_graph_list(path, db)
+1. **graph_data_to_graph_list(path, db)**  *Takes database path {path} and database-name {db} and outputs the graph data in form of a triple: (graph_list, graph_labels, graph_attributes)*
+
+     -graph_list:   *#python list of networkx graphs with graph information given by the database*
   
-  #Takes database path {path} and database-name {db} and outputs the graph data in form of a triple:
-  (graph_list, graph_labels, graph_attributes)
-
-  graph_list: python list of networkx graphs with graph information given by the database
+     -graph_labels:   *#python list of integers as the labels of the graphs according to the database*
   
-  graph_labels: python list of integers as the labels of the graphs according to the database
-  
-  graph_attributes: python list with additional attributes of the graphs according to the database or empty list if there are none
+     -graph_attributes:   *#python list with additional attributes of the graphs according to the database or empty list if there are none*
 
-node_label_vector(graph, node_id)
+2. **node_label_vector(graph, node_id)**  *#outputs vector of node_label of node with {node_id} in graph {graph}*
 
-node_attribute_vector(graph, node_id)
+3. **node_attribute_vector(graph, node_id)**  *#outputs vector of node_attributes of node with {node_id} in graph {graph}*
   
-  #outputs vector of node_label/node_attributes of node with {node_id} in graph {graph}
+  
  
-nodes_label_matrix(graph)
+4. **nodes_label_matrix(graph)**  *#same as above but outputs all labels of nodes of graph {graph}*
 
-nodes_attribute_matrix(graph)
+5. **nodes_attribute_matrix(graph)**  *#same as above but outputs all attributes of nodes of graph {graph}*
 
-  #same as above but outputs all labels/attributes of nodes of graph {graph}
   
-edge_label(graph, node_i, node_j)
+  
+6. **edge_label(graph, node_i, node_j)**  *#outputs vector of edge_labels of edge (node_i, node_j) in graph {graph}*
 
-edge_attribute_matrix(graph, node_i, node_j)
+7. **edge_attribute_matrix(graph, node_i, node_j)**   *#outputs vector of edge_attributes of edge (node_i, node_j) in graph {graph}*
 
-  #outputs vector of edge_labels/edge_attributes of edge (node_i, node_j) in graph {graph}
-
-
+  
 
 
-Python example:
 
-        path = "path_to_dbs/"
-        db = "DBLP_v1"
-        graph_data = graph_data_to_graph_list(path, db)
-        graph_list, graph_labels, graph_attributes = graph_data
+
+
+=======
+**Python example:**
+```
+path = "path_to_dbs/"
+db = "MUTAG"
+graph_data = graph_data_to_graph_list(path, db)
+graph_list, graph_labels, graph_attributes = graph_data
+```
