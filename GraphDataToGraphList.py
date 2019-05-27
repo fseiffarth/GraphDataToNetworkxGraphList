@@ -8,13 +8,28 @@ import networkx as nx
 import numpy as np
 from pathlib import Path
 import io
+import pydot
+import matplotlib
+from matplotlib import pyplot
 
 def attributes_to_np_array(attr_str):
     return np.asfarray(np.array(attr_str.strip().split(",")), float)
     
 
 def graph_data_to_graph_list(path, db):
-    
+    '''
+    Convert graph dataset in the Dortmund collection to a networkx graph with node and edge labels and graph labels and attributes.
+
+    Currently, vertex and edge labels will be the first dimension of the label vector, cast as int, or 'None' if there
+    are no label information present. See getLabel above.
+
+    Graphs will be numbered from 0 to N-1 if there are N graphs in the dataset.
+
+    :param path: path to the unzipped location of the collection (must be terminated with '/'
+    :param db: name of the dataset in the collection
+    :return (graph_list, graph_label_list, graph_attribute_list): triple of python lists of networkx graphs, graph labels and graph attributes
+    '''
+
     #return variables
     graph_list = []
     graph_label_list = []
@@ -155,6 +170,14 @@ def graph_data_to_graph_list(path, db):
 
 #node label from node_id
 def node_label_vector(graph, node_id):
+    '''
+    Returns node labels from given graph and node
+
+    :param path: path to the unzipped location of the collection (must be terminated with '/'
+    :param db: name of the dataset in the collection
+    :return (graph_list, graph_label_list, graph_attribute_list): triple of python lists of networkx graphs, graph labels and graph attributes
+    '''
+
     if graph.has_node(node_id):
         node = graph.nodes(data = True)[node_id]
         if "label" in node.keys():
@@ -228,3 +251,94 @@ def edge_attribute_matrix(graph, node_i, node_j):
         return label_mat
     else:
         return []
+    
+    
+def example_graph():
+    graph = nx.Graph()
+    for i in range(0, 4):
+        graph.add_node(i, label = attributes_to_np_array("0"))
+    for i in range(4, 6):
+        graph.add_node(i, label = attributes_to_np_array("1"))
+    graph.add_edge(0, 4)
+    graph.add_edge(1, 4)
+    graph.add_edge(2, 5)
+    graph.add_edge(3, 5)
+    graph.add_edge(4, 5)
+    return graph
+
+
+def draw_graph(graph):
+    '''
+    Draw a graph with given node and edge labels
+
+    :param graph: networkx graph to draw
+    :return None:
+    '''
+
+    pos = nx.nx_pydot.graphviz_layout(graph)
+    nx.draw(graph, pos)
+    
+    
+    node_labels = {}
+    for (key, value) in graph.nodes(data = True):
+        if "label" in value:
+            node_labels[key] = int(value["label"])
+        else:
+            node_labels[key] = ""
+            
+    nx.draw_networkx_labels(graph, pos, labels = node_labels)
+    
+    edge_labels = {}
+    for (key1, key2, value) in graph.edges(data = True):
+        if "label" in value:
+            edge_labels[(key1, key2)] = int(value["label"])
+        else:
+            edge_labels[(key1, key2)] = ""
+    nx.draw_networkx_edge_labels(graph, pos, edge_labels = edge_labels)
+    pyplot.show()
+    
+def draw_graph_labels(graph, node_labels = None, edge_labels = None):
+    '''
+    Draw a graph with manually assigned node and edge labels    
+
+    :param graph: networkx graph to draw
+    :param node_labels: list of node labels to print at the nodes of the graph if not None
+    :param edge_labels: list of triples (node1, node2, value) for edge labels of edge (node1, node2) to print at the edges of the graph if not None
+    :return None:
+    '''
+    
+    pos = nx.nx_pydot.graphviz_layout(graph)
+    nx.draw(graph, pos)
+    
+    if node_labels is not None:
+        right_size = True
+        if graph.number_of_nodes() != len(node_labels):
+            right_size = False
+    
+        
+        try:
+            if not right_size:
+                raise ValueError("Node labels length and graph number of nodes do not fit together")
+            
+        except ValueError:
+            exit("Node labels length and graph number of nodes do not fit together")
+        
+        nx.draw_networkx_labels(graph, pos, labels = {key: value for key, value in enumerate(node_labels, 0)})
+    
+    if edge_labels is not None:
+        right_size = True
+        if graph.number_of_edges() != len(edge_labels):
+            right_size = False
+        try:
+            if not right_size:
+                raise ValueError("Edge labels length and graph number of edges do not fit together")
+            
+        except ValueError:
+            exit("Edge labels length and graph number of edges do not fit together")
+    
+        nx.draw_networkx_edge_labels(graph, pos, edge_labels = {(key1, key2): value for (key1, key2, value) in edge_labels})
+
+    pyplot.show()
+    
+
+
