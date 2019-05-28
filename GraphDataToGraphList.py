@@ -173,9 +173,9 @@ def node_label_vector(graph, node_id):
     '''
     Returns node labels from given graph and node
 
-    :param path: path to the unzipped location of the collection (must be terminated with '/'
-    :param db: name of the dataset in the collection
-    :return (graph_list, graph_label_list, graph_attribute_list): triple of python lists of networkx graphs, graph labels and graph attributes
+    :param graph: networkx graph
+    :param node_id: id of the node for printing the label vector
+    :return numpy array of node labels or empty array if there are no node labels
     '''
 
     if graph.has_node(node_id):
@@ -184,12 +184,18 @@ def node_label_vector(graph, node_id):
             label = node["label"]
             return label
         else:
-            return []
+            return np.array([])
     else:
-        return []
+        return np.array([])
 
 #simple node label array from graph node labels
 def nodes_label_matrix(graph):
+    '''
+    Returns node labels from given graph
+
+    :param graph: networkx graph
+    :return numpy array of node labels of the graph
+    '''
     if "label" in graph.nodes(data = True)[0].keys():
         label_array = np.zeros((graph.number_of_nodes(), graph.nodes(data = True)[0]["label"].size))
         for i, node in enumerate(graph.nodes(data = True), 0):
@@ -197,31 +203,78 @@ def nodes_label_matrix(graph):
                 label_array[i][j] = entry 
         return label_array
     else:
-        return []
+        return np.array([])
 
 #node label matrix with one hot coding, with a previous given size of coding, labels have to be of the form 0, 1, 2, 3, 4, 5, 6
-def node_label_coding_matrix(graph, max_coding):
+def nodes_label_coding_matrix(graph, max_coding, zeros = True):
+    '''
+    Returns node labels from given graph and node
+
+    :param graph: networkx graph
+    :param max_coding: maximal size of the one hot coding of the node labels
+    :param zeros: True if there should be zero columns in the one hot coding
+    :return numpy array of one hot coded node labels of the graph if labels are given
+    '''  
+
+    try:
+        if graph.nodes(data = True)[0]["label"].size != 1:
+            raise ValueError("Node label coding not possible because of multidimensional node labels")
+    except ValueError:
+        exit("Node label coding not possible because of multidimensional node labels")
+        
     if "label" in graph.nodes(data = True)[0].keys():
-        label_mat = np.zeros((graph.number_of_nodes(), max_coding))
-        for i, node in enumerate(graph.nodes(data = True), 0):
-            num = int(node[1]["label"])
-            if num >= 0 and num < max_coding:
-                label_mat[i][num] = 1
-        return label_mat
+        if not zeros:
+            max = 0
+            for node in graph.nodes(data = True):
+                label = int(node[1]["label"])
+                if label > max:
+                    max = label
+            
+            if max_coding < max + 1:
+                label_mat = np.zeros((graph.number_of_nodes(), max_coding))
+            else:
+                label_mat = np.zeros((graph.number_of_nodes(), max + 1))
+            for i, node in enumerate(graph.nodes(data = True), 0):
+                num = int(node[1]["label"])
+                if num >= 0 and num < max_coding:
+                    label_mat[i][num] = 1
+            return label_mat            
+        else:
+            label_mat = np.zeros((graph.number_of_nodes(), max_coding))
+            for i, node in enumerate(graph.nodes(data = True), 0):
+                num = int(node[1]["label"])
+                if num >= 0 and num < max_coding:
+                    label_mat[i][num] = 1
+            return label_mat
     else:
-        return []
+        return np.array([])
 
 
 def node_attribute_vector(graph, node_id):
+    '''
+    Returns attributes of a node as numpy array
+
+    :param graph: networkx graph
+    :param node_id: id of the node for printing the label vector
+    :return numpy array of node attributes or empty array if there are no node attributes
+    '''
+    
     node = graph.nodes(data = True)[node_id]
     if "attribute" in node.keys():
         label_mat = node["attribute"]
         return label_mat
     else:
-        return []
+        return np.array([])
 
 #node attribute matrix 
 def nodes_attribute_matrix(graph):
+    '''
+    Returns attributes of a node as numpy array
+
+    :param graph: networkx graph
+    :return numpy array of node attributes or empty array if there are no node attributes
+    '''
+    
     if "attribute" in graph.nodes(data = True)[0].keys():
         label_mat = np.zeros((graph.number_of_nodes(), graph.nodes(data = True)[0]["attribute"].size))
         for i, node in enumerate(graph.nodes(data = True), 0):
@@ -230,42 +283,165 @@ def nodes_attribute_matrix(graph):
                 label_mat[i][j] = arr[j]
         return label_mat
     else:
-        return []
+        return np.array([])
 
 #edge label from node_ids
-def edge_label(graph, node_i, node_j):
+def edge_label_vector(graph, node_i, node_j):
+    '''
+    Returns edge labels from given graph and edge
+
+    :param graph: networkx graph
+    :param node_i: head of edge
+    :param node_i: tail of edge
+    :return numpy array of edge labels or empty array if there are no edge labels
+    '''
+
     if graph.has_edge(node_i, node_j):
         edge = graph.get_edge_data(node_i, node_j)
         if "label" in edge.keys():
             label = edge["label"]
             return label
         else:
-            return []
+            return np.array([])
     else:
-        return []
+        return np.array([])
+
+#edge label from node_ids
+def edges_label_matrix(graph):
+    '''
+    Returns all edge labels from given graph
+
+    :param graph: networkx graph
+    :return numpy array of all edge labels or empty array if there are no edge labels
+    '''
+
+    if len(graph.edges) != 0:
+        edge = next(iter(graph.edges(data = True)))
+        if "label" in edge[2].keys():
+            label_mat = np.zeros((graph.number_of_edges(), edge[2]["label"].size))
+            
+            for i, edge in enumerate(graph.edges(data = True), 0):
+                if "label" in edge[2].keys():
+                    label = edge[2]["label"]
+                    for j, entry in enumerate(label, 0):
+                        label_mat[i][j] = entry
+                else:
+                    return np.array([])
+            return label_mat
+        else:
+            return np.array([])    
+    else:
+        return np.array([])
+    
+
+#node label matrix with one hot coding, with a previous given size of coding, labels have to be of the form 0, 1, 2, 3, 4, 5, 6
+def edges_label_coding_matrix(graph, max_coding, zeros = True):
+    '''
+    Returns edge label one hot coded from given graph
+
+    :param graph: networkx graph
+    :param max_coding: maximal size of the one hot coding of the edge labels
+    :param zeros: True if there should be zero columns in the one hot coding
+    :return numpy array of one hot coded edge labels of the graph if labels are given
+    '''  
+    if len(graph.edges) != 0:
+        edge = next(iter(graph.edges(data = True)))
+        if "label" in edge[2].keys():
+
+            try:
+                if edge[2]["label"].size != 1:
+                    raise ValueError("Edge label coding not possible because of multidimensional edge labels")
+            except ValueError:
+                exit("Edge label coding not possible because of multidimensional node labels")
+                
+
+            if not zeros:
+                max = 0
+                for edge in graph.edges(data = True):
+                    label = int(edge[2]["label"])
+                    if label > max:
+                        max = label
+                
+                if max_coding < max + 1:
+                    label_mat = np.zeros((graph.number_of_edges(), max_coding))
+                else:
+                    label_mat = np.zeros((graph.number_of_edges(), max + 1))
+                for i, edge in enumerate(graph.edges(data = True), 0):
+                    num = int(edge[2]["label"])
+                    if num >= 0 and num < max_coding:
+                        label_mat[i][num] = 1
+                return label_mat            
+            else:
+                label_mat = np.zeros((graph.number_of_edges(), max_coding))
+                for i, edge in enumerate(graph.edges(data = True), 0):
+                    num = int(edge[2]["label"])
+                    if num >= 0 and num < max_coding:
+                        label_mat[i][num] = 1
+                return label_mat
+        else:
+            return np.array([])    
+    else:
+        return np.array([])    
 
         
-def edge_attribute_matrix(graph, node_i, node_j):
+def edge_attribute_vector(graph, node_i, node_j):
+    '''
+    Returns attributes of a edge as numpy array
+
+    :param graph: networkx graph
+    :return numpy array of edge attributes or empty array if there are no edge attributes
+    '''
+
     if graph.has_edge(node_i, node_j) and "attribute" in graph.edges[node_i, node_j].keys():
         label_mat = graph.edges[node_i, node_j]["attribute"]
         return label_mat
     else:
-        return []
-    
-    
-def example_graph():
-    graph = nx.Graph()
-    for i in range(0, 4):
-        graph.add_node(i, label = attributes_to_np_array("0"))
-    for i in range(4, 6):
-        graph.add_node(i, label = attributes_to_np_array("1"))
-    graph.add_edge(0, 4)
-    graph.add_edge(1, 4)
-    graph.add_edge(2, 5)
-    graph.add_edge(3, 5)
-    graph.add_edge(4, 5)
-    return graph
+        return np.array([])
 
+#edge label from node_ids
+def edges_attribute_matrix(graph):
+    '''
+    Returns all edge labels from given graph
+
+    :param graph: networkx graph
+    :return numpy array of all edge attributes or empty array if there are no edge attributes
+    '''
+
+    if len(graph.edges) != 0:
+        edge = next(iter(graph.edges(data = True)))
+        if "attribute" in edge[2].keys():
+            label_mat = np.zeros((graph.number_of_edges(), edge[2]["attribute"].size))
+            
+            for i, edge in enumerate(graph.edges(data = True), 0):
+                if "attribute" in edge[2].keys():
+                    label = edge[2]["attribute"]
+                    for j, entry in enumerate(label, 0):
+                        label_mat[i][j] = entry
+                else:
+                    return np.array([])
+            return label_mat
+        else:
+            return np.array([])    
+    else:
+        return np.array([])
+
+
+def array_to_str(array):
+    '''
+    Prints an array to some string representation
+
+    :param array: numpy array of numbers
+    :return str_: string from array
+    '''
+
+    str_ = ""
+    for x in array:
+        str_ += str(x)
+        str_ += " "
+    return str_
+    
+    
+    
 
 def draw_graph(graph):
     '''
@@ -282,10 +458,10 @@ def draw_graph(graph):
     node_labels = {}
     for (key, value) in graph.nodes(data = True):
         if "label" in value:
-            node_labels[key] = int(value["label"])
+            node_labels[key] = array_to_str(value["label"])
         else:
             node_labels[key] = ""
-            
+    
     nx.draw_networkx_labels(graph, pos, labels = node_labels)
     
     edge_labels = {}
@@ -311,13 +487,8 @@ def draw_graph_labels(graph, node_labels = None, edge_labels = None):
     nx.draw(graph, pos)
     
     if node_labels is not None:
-        right_size = True
-        if graph.number_of_nodes() != len(node_labels):
-            right_size = False
-    
-        
         try:
-            if not right_size:
+            if graph.number_of_nodes() != len(node_labels):
                 raise ValueError("Node labels length and graph number of nodes do not fit together")
             
         except ValueError:
@@ -326,11 +497,8 @@ def draw_graph_labels(graph, node_labels = None, edge_labels = None):
         nx.draw_networkx_labels(graph, pos, labels = {key: value for key, value in enumerate(node_labels, 0)})
     
     if edge_labels is not None:
-        right_size = True
-        if graph.number_of_edges() != len(edge_labels):
-            right_size = False
         try:
-            if not right_size:
+            if graph.number_of_edges() != len(edge_labels):
                 raise ValueError("Edge labels length and graph number of edges do not fit together")
             
         except ValueError:
@@ -340,5 +508,20 @@ def draw_graph_labels(graph, node_labels = None, edge_labels = None):
 
     pyplot.show()
     
+    
+def example_graph():
+    graph = nx.Graph()
+    for i in range(0, 4):
+        graph.add_node(i, label = attributes_to_np_array("0"))
+    for i in range(4, 6):
+        graph.add_node(i, label = attributes_to_np_array("1"))
+    graph.add_edge(0, 4)
+    graph.add_edge(1, 4)
+    graph.add_edge(2, 5)
+    graph.add_edge(3, 5)
+    graph.add_edge(4, 5)
+    return graph
+
+
 
 

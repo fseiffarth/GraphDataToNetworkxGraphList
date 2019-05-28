@@ -9,11 +9,18 @@ from ReadGraphs.GraphDataToGraphList import *
 
 def main():
     path = "/home/florian/Dokumente/Databases/GraphData/DS_all/"
-    db = "REDDIT-BINARY"
+    db = "MUTAG"
     graph_data = graph_data_to_graph_list(path, db)
     graph_list, graph_labels, graph_attributes = graph_data
     
-    draw_graph(graph_list[1])
+    graph = graph_list[1]
+    draw_graph(graph)
+    print(nodes_label_matrix(graph))
+    print(type(nodes_label_matrix(graph)))
+    #print(nodes_label_coding_matrix(graph, 50, False))
+    
+    print(edges_attribute_matrix(graph))
+    print(edges_label_coding_matrix(graph, 5, False))
 
 
 if __name__ == '__main__':
