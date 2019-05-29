@@ -20,11 +20,6 @@ def graph_data_to_graph_list(path, db):
     '''
     Convert graph dataset in the Dortmund collection to a networkx graph with node and edge labels and graph labels and attributes.
 
-    Currently, vertex and edge labels will be the first dimension of the label vector, cast as int, or 'None' if there
-    are no label information present. See getLabel above.
-
-    Graphs will be numbered from 0 to N-1 if there are N graphs in the dataset.
-
     :param path: path to the unzipped location of the collection (must be terminated with '/'
     :param db: name of the dataset in the collection
     :return (graph_list, graph_label_list, graph_attribute_list): triple of python lists of networkx graphs, graph labels and graph attributes
