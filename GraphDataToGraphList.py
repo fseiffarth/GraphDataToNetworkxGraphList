@@ -445,7 +445,7 @@ def array_to_str(array):
 
 def draw_graph(graph):
     '''
-    Draw a graph with given node and edge labels
+    Draws a graph with given node and edge labels
 
     :param graph: networkx graph to draw
     :return None:
@@ -475,7 +475,7 @@ def draw_graph(graph):
     
 def draw_graph_labels(graph, node_labels = None, edge_labels = None):
     '''
-    Draw a graph with manually assigned node and edge labels    
+    Draws a graph with manually assigned node and edge labels    
 
     :param graph: networkx graph to draw
     :param node_labels: list of node labels to print at the nodes of the graph if not None
