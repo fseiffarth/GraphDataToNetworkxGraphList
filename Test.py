@@ -9,7 +9,7 @@ from ReadGraphs.GraphDataToGraphList import *
 
 def main():
     path = "/home/florian/Dokumente/Databases/GraphData/DS_all/"
-    db = "MUTAG"
+    db = "DHFR"
     graph_data = graph_data_to_graph_list(path, db)
     graph_list, graph_labels, graph_attributes = graph_data
     
@@ -21,8 +21,8 @@ def main():
     
     print(edges_attribute_matrix(graph))
     print(edges_label_coding_matrix(graph, 5, False))
-    print(has_node_attributes(graph))
-
+    print(has_node_labels(graph))
+    print(node_attribute_dimension(graph))
 
 if __name__ == '__main__':
     main()

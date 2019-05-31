@@ -136,7 +136,8 @@ def graph_data_to_graph_list(path, db):
         graph_list.append(G)
         
         #add graph label to list
-        graph_label_list.append(int(graph_label))
+        if graph_label != "\n":
+            graph_label_list.append(int(graph_label))
         graph_label = graph_label_file.readline()
         
         #add graph attributes as numpy array
@@ -212,12 +213,12 @@ def nodes_label_coding_matrix(graph, max_coding, zeros = True):
     '''  
 
     try:
-        if graph.nodes(data = True)[0]["label"].size != 1:
+        if node_label_dimension(graph) != 1:
             raise ValueError("Node label coding not possible because of multidimensional node labels")
     except ValueError:
         exit("Node label coding not possible because of multidimensional node labels")
         
-    if "label" in graph.nodes(data = True)[0].keys():
+    if has_node_labels(graph):
         if not zeros:
             max = 0
             for node in graph.nodes(data = True):
@@ -270,8 +271,8 @@ def nodes_attribute_matrix(graph):
     :return numpy array of node attributes or empty array if there are no node attributes
     '''
     
-    if "attribute" in graph.nodes(data = True)[0].keys():
-        label_mat = np.zeros((graph.number_of_nodes(), graph.nodes(data = True)[0]["attribute"].size))
+    if has_node_attributes(graph):
+        label_mat = np.zeros((graph.number_of_nodes(), node_attribute_dimension(graph)))
         for i, node in enumerate(graph.nodes(data = True), 0):
             arr = node[1]["attribute"]
             for j in range(0, len(arr)):
@@ -310,21 +311,17 @@ def edges_label_matrix(graph):
     :return numpy array of all edge labels or empty array if there are no edge labels
     '''
 
-    if len(graph.edges) != 0:
-        edge = next(iter(graph.edges(data = True)))
-        if "label" in edge[2].keys():
-            label_mat = np.zeros((graph.number_of_edges(), edge[2]["label"].size))
-            
-            for i, edge in enumerate(graph.edges(data = True), 0):
-                if "label" in edge[2].keys():
-                    label = edge[2]["label"]
-                    for j, entry in enumerate(label, 0):
-                        label_mat[i][j] = entry
-                else:
-                    return np.array([])
-            return label_mat
-        else:
-            return np.array([])    
+    if has_edge_labels(graph):
+        label_mat = np.zeros((graph.number_of_edges(), edge_label_dimension(graph)))
+        
+        for i, edge in enumerate(graph.edges(data = True), 0):
+            if "label" in edge[2].keys():
+                label = edge[2]["label"]
+                for j, entry in enumerate(label, 0):
+                    label_mat[i][j] = entry
+            else:
+                return np.array([])
+        return label_mat 
     else:
         return np.array([])
     
@@ -339,42 +336,39 @@ def edges_label_coding_matrix(graph, max_coding, zeros = True):
     :param zeros: True if there should be zero columns in the one hot coding
     :return numpy array of one hot coded edge labels of the graph if labels are given
     '''  
-    if len(graph.edges) != 0:
-        edge = next(iter(graph.edges(data = True)))
-        if "label" in edge[2].keys():
+    
+    if has_edge_labels(graph):
 
-            try:
-                if edge[2]["label"].size != 1:
-                    raise ValueError("Edge label coding not possible because of multidimensional edge labels")
-            except ValueError:
-                exit("Edge label coding not possible because of multidimensional node labels")
-                
+        try:
+            if edge_label_dimension(graph) != 1:
+                raise ValueError("Edge label coding not possible because of multidimensional edge labels")
+        except ValueError:
+            exit("Edge label coding not possible because of multidimensional node labels")
+            
 
-            if not zeros:
-                max = 0
-                for edge in graph.edges(data = True):
-                    label = int(edge[2]["label"])
-                    if label > max:
-                        max = label
-                
-                if max_coding < max + 1:
-                    label_mat = np.zeros((graph.number_of_edges(), max_coding))
-                else:
-                    label_mat = np.zeros((graph.number_of_edges(), max + 1))
-                for i, edge in enumerate(graph.edges(data = True), 0):
-                    num = int(edge[2]["label"])
-                    if num >= 0 and num < max_coding:
-                        label_mat[i][num] = 1
-                return label_mat            
-            else:
+        if not zeros:
+            max = 0
+            for edge in graph.edges(data = True):
+                label = int(edge[2]["label"])
+                if label > max:
+                    max = label
+            
+            if max_coding < max + 1:
                 label_mat = np.zeros((graph.number_of_edges(), max_coding))
-                for i, edge in enumerate(graph.edges(data = True), 0):
-                    num = int(edge[2]["label"])
-                    if num >= 0 and num < max_coding:
-                        label_mat[i][num] = 1
-                return label_mat
+            else:
+                label_mat = np.zeros((graph.number_of_edges(), max + 1))
+            for i, edge in enumerate(graph.edges(data = True), 0):
+                num = int(edge[2]["label"])
+                if num >= 0 and num < max_coding:
+                    label_mat[i][num] = 1
+            return label_mat            
         else:
-            return np.array([])    
+            label_mat = np.zeros((graph.number_of_edges(), max_coding))
+            for i, edge in enumerate(graph.edges(data = True), 0):
+                num = int(edge[2]["label"])
+                if num >= 0 and num < max_coding:
+                    label_mat[i][num] = 1
+            return label_mat  
     else:
         return np.array([])    
 
@@ -402,21 +396,17 @@ def edges_attribute_matrix(graph):
     :return numpy array of all edge attributes or empty array if there are no edge attributes
     '''
 
-    if len(graph.edges) != 0:
-        edge = next(iter(graph.edges(data = True)))
-        if "attribute" in edge[2].keys():
-            label_mat = np.zeros((graph.number_of_edges(), edge[2]["attribute"].size))
+    if has_edge_attributes(graph):
+        label_mat = np.zeros((graph.number_of_edges(), edge_attribute_dimension(graph)))
             
-            for i, edge in enumerate(graph.edges(data = True), 0):
-                if "attribute" in edge[2].keys():
-                    label = edge[2]["attribute"]
-                    for j, entry in enumerate(label, 0):
-                        label_mat[i][j] = entry
-                else:
-                    return np.array([])
-            return label_mat
-        else:
-            return np.array([])    
+        for i, edge in enumerate(graph.edges(data = True), 0):
+            if "attribute" in edge[2].keys():
+                label = edge[2]["attribute"]
+                for j, entry in enumerate(label, 0):
+                    label_mat[i][j] = entry
+            else:
+                return np.array([])
+        return label_mat
     else:
         return np.array([])
 
@@ -503,7 +493,11 @@ def draw_graph_labels(graph, node_labels = None, edge_labels = None):
         nx.draw_networkx_edge_labels(graph, pos, edge_labels = {(key1, key2): value for (key1, key2, value) in edge_labels})
 
     pyplot.show()
-    
+
+
+
+
+
 
 def has_node_labels(graph):
     '''
@@ -512,10 +506,28 @@ def has_node_labels(graph):
     :param graph: networkx graph to draw
     :return  Returns True if labels exist else False:
     '''
-    if "label" in graph.nodes(data = True)[0].keys():
+    if node_label_dimension(graph) != 0:
         return True
     else:
         return False
+    
+
+def node_label_dimension(graph):
+    '''
+    Checks the dimension of node labels
+
+    :param graph: networkx graph to draw
+    :return  Returns dimension of node labels, 0 if there are none:
+    '''
+    
+    if len(graph.nodes()) != 0:
+        if "label" in graph.nodes(data = True)[0].keys():
+            return graph.nodes(data = True)[0]["label"].size
+
+    return 0
+
+
+
 
 def has_node_attributes(graph):
     '''
@@ -524,11 +536,28 @@ def has_node_attributes(graph):
     :param graph: networkx graph to draw
     :return  Returns True if attributes exist else False:
     '''
-    if "attribute" in graph.nodes(data = True)[0].keys():
+    if node_attribute_dimension(graph) != 0:
         return True
     else:
         return False
 
+
+
+def node_attribute_dimension(graph):
+    '''
+    Checks the dimension of node attributes
+
+    :param graph: networkx graph to draw
+    :return  Returns dimension of node attributes, 0 if there are none:
+    '''
+    
+    
+    if len(graph.nodes()) != 0:
+        if "attribute" in graph.nodes(data = True)[0].keys():
+            return graph.nodes(data = True)[0]["attribute"].size
+
+    return 0
+    
 
 def has_edge_labels(graph):
     '''
@@ -538,11 +567,26 @@ def has_edge_labels(graph):
     :return  Returns True if labels exist else False:
     '''
     
-    edge = next(iter(graph.edges(data = True)))
-    if "label" in edge[2].keys():
+    if edge_label_dimension(graph) != 0:
         return True
     else:
         return False
+    
+def edge_label_dimension(graph):
+    '''
+    Checks the dimension of edge labels
+
+    :param graph: networkx graph to draw
+    :return  Returns dimension of edge labels, 0 if there are none:
+    '''
+    if len(graph.edges()) != 0:
+        edge = next(iter(graph.edges(data = True)))
+        if "label" in edge[2].keys():
+            return edge[2]["label"].size
+
+    return 0
+
+
 
 def has_edge_attributes(graph):
     '''
@@ -552,11 +596,25 @@ def has_edge_attributes(graph):
     :return  Returns True if attributes exist else False:
     '''
     
-    edge = next(iter(graph.edges(data = True)))
-    if "attributes" in edge[2].keys():
+    if edge_attribute_dimension(graph) != 0:
         return True
     else:
         return False
+
+def edge_attribute_dimension(graph):
+    '''
+    Checks the dimension of edge attributes
+
+    :param graph: networkx graph to draw
+    :return  Returns dimension of edge attributes, 0 if there are none:
+    '''
+    
+    if len(graph.edges()) != 0:
+        edge = next(iter(graph.edges(data = True)))
+        if "attribute" in edge[2].keys():
+            return edge[2]["attribute"].size
+
+    return 0
 
     
 def example_graph():
@@ -565,11 +623,11 @@ def example_graph():
         graph.add_node(i, label = attributes_to_np_array("0"))
     for i in range(4, 6):
         graph.add_node(i, label = attributes_to_np_array("1"))
-    graph.add_edge(0, 4)
-    graph.add_edge(1, 4)
-    graph.add_edge(2, 5)
-    graph.add_edge(3, 5)
-    graph.add_edge(4, 5)
+    #graph.add_edge(0, 4)
+    #graph.add_edge(1, 4)
+    #graph.add_edge(2, 5)
+    #graph.add_edge(3, 5)
+    #graph.add_edge(4, 5)
     return graph
 
 
