@@ -468,6 +468,7 @@ def draw_graph(graph):
     nx.draw_networkx_edge_labels(graph, pos, edge_labels = edge_labels)
     pyplot.show()
     
+    
 def draw_graph_labels(graph, node_labels = None, edge_labels = None):
     '''
     Draws a graph with manually assigned node and edge labels    
@@ -503,6 +504,60 @@ def draw_graph_labels(graph, node_labels = None, edge_labels = None):
 
     pyplot.show()
     
+
+def has_node_labels(graph):
+    '''
+    Checks if graph has node labels
+
+    :param graph: networkx graph to draw
+    :return  Returns True if labels exist else False:
+    '''
+    if "label" in graph.nodes(data = True)[0].keys():
+        return True
+    else:
+        return False
+
+def has_node_attributes(graph):
+    '''
+    Checks if graph has node attributes
+
+    :param graph: networkx graph to draw
+    :return  Returns True if attributes exist else False:
+    '''
+    if "attribute" in graph.nodes(data = True)[0].keys():
+        return True
+    else:
+        return False
+
+
+def has_edge_labels(graph):
+    '''
+    Checks if graph has edge labels
+
+    :param graph: networkx graph to draw
+    :return  Returns True if labels exist else False:
+    '''
+    
+    edge = next(iter(graph.edges(data = True)))
+    if "label" in edge[2].keys():
+        return True
+    else:
+        return False
+
+def has_edge_attributes(graph):
+    '''
+    Checks if graph has edge attributes
+
+    :param graph: networkx graph to draw
+    :return  Returns True if attributes exist else False:
+    '''
+    
+    edge = next(iter(graph.edges(data = True)))
+    if "attributes" in edge[2].keys():
+        return True
+    else:
+        return False
+
     
 def example_graph():
     graph = nx.Graph()

@@ -21,6 +21,7 @@ def main():
     
     print(edges_attribute_matrix(graph))
     print(edges_label_coding_matrix(graph, 5, False))
+    print(has_node_attributes(graph))
 
 
 if __name__ == '__main__':
