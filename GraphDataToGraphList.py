@@ -164,6 +164,154 @@ def graph_data_to_graph_list(path, db):
     #returns list of the graphs of the db, together with graph label list and possibly graph_attributes or an empty list of there are no attributes
     return (graph_list, graph_label_list, graph_attribute_list)
 
+
+def graph_data_generator(path, db):
+    '''
+    Convert graph dataset in the Dortmund collection to a networkx graph with node and edge labels and graph labels and attributes.
+
+    :param path: path to the unzipped location of the collection (must be terminated with '/'
+    :param db: name of the dataset in the collection
+    :return generator for triples (graph, graph_label, graph_attribute): triple of networkx graph, graph label and graph attribute
+    '''
+    
+    G = []
+    G_label = 0
+    G_attributes = np.array([])
+    #open the data files and read first line
+    edge_file = open(path + db + "/" + db + "_A.txt", "r")
+    edge = edge_file.readline().strip().split(",")
+    
+    #graph indicator
+    graph_indicator = open(path + db + "/" + db + "_graph_indicator.txt", "r")
+    graph = graph_indicator.readline()
+    
+    #graph labels
+    graph_label_file = open(path + db + "/" + db + "_graph_labels.txt", "r")
+    graph_label = graph_label_file.readline()   
+    
+    #node labels
+    node_labels = False
+    if Path(path + db + "/" + db + "_node_labels.txt").is_file():
+        node_label_file = open(path + db + "/" + db + "_node_labels.txt", "r")
+        node_labels = True
+        node_label = node_label_file.readline()    
+    
+     
+    #edge labels
+    edge_labels = False
+    if Path(path + db + "/" + db + "_edge_labels.txt").is_file():
+        edge_label_file = open(path + db + "/" + db + "_edge_labels.txt", "r")
+        edge_labels = True
+        edge_label = edge_label_file.readline()
+        
+    #edge attribures
+    edge_attributes = False
+    if Path(path + db + "/" + db + "_edge_attributes.txt").is_file():
+        edge_attribute_file = open(path + db + "/" + db + "_edge_attributes.txt", "r")
+        edge_attributes = True
+        edge_attribute = edge_attribute_file.readline()
+    
+    #node attribures
+    node_attributes = False
+    if Path(path + db + "/" + db + "_node_attributes.txt").is_file(): 
+        node_attribute_file = open(path + db + "/" + db + "_node_attributes.txt", "r")    
+        node_attributes = True
+        node_attribute = node_attribute_file.readline()
+
+    #graph attribures
+    graph_attributes = False
+    if Path(path + db + "/" + db + "_graph_attributes.txt").is_file():
+        graph_attribute_file = open(path + db + "/" + db + "_graph_attributes.txt", "r")
+        graph_attributes = True
+        graph_attribute = graph_attribute_file.readline()
+
+    
+    #go through the data and read out the graphs
+    node_counter = 1
+    #all node_id will start with 0 for all graphs
+    node_id_subtractor = 1
+    while graph_label:
+        G = nx.Graph()
+        old_graph = graph
+        new_graph = False
+        
+        #read out one complete graph
+        while not new_graph and edge:
+            #set all node labels with possibly node attributes    
+            while max(int(edge[0]), int(edge[1])) >= node_counter and not new_graph:
+                if graph == old_graph:
+                    if node_attributes and node_labels:
+                        G.add_node(node_counter - node_id_subtractor, label = attributes_to_np_array(node_label), attribute = attributes_to_np_array(node_attribute))
+                        node_attribute = node_attribute_file.readline()
+                        node_label = node_label_file.readline()
+                    elif node_attributes:
+                        G.add_node(node_counter - node_id_subtractor, attribute = attributes_to_np_array(node_attribute))
+                        node_attribute = node_attribute_file.readline()
+                    elif node_labels:
+                        G.add_node(node_counter - node_id_subtractor, label = attributes_to_np_array(node_label))
+                        node_label = node_label_file.readline()
+                    else:
+                        G.add_node(node_counter - node_id_subtractor)
+                    node_counter += 1
+                    graph = graph_indicator.readline() 
+                else:
+                    old_graph = graph 
+                    new_graph = True
+                    node_id_subtractor = node_counter
+
+            if not new_graph:
+                #set edge with possibly edge label and attributes and get next line
+                if edge_labels and edge_attributes:
+                    G.add_edge(int(edge[0]) - node_id_subtractor, int(edge[1]) - node_id_subtractor, label = attributes_to_np_array(edge_label), attribute = attributes_to_np_array(edge_attribute))
+                    edge_attribute = edge_attribute_file.readline()
+                    edge_label = edge_label_file.readline()
+                elif  edge_labels:
+                    G.add_edge(int(edge[0]) - node_id_subtractor, int(edge[1]) - node_id_subtractor, label = attributes_to_np_array(edge_label))
+                    edge_label = edge_label_file.readline()
+                elif edge_attributes:
+                    G.add_edge(int(edge[0]) - node_id_subtractor, int(edge[1]) - node_id_subtractor, attribute = attributes_to_np_array(edge_attribute))
+                    edge_attribute = edge_attribute_file.readline()
+                else:
+                    G.add_edge(int(edge[0]) - node_id_subtractor, int(edge[1]) - node_id_subtractor)
+                    
+                #get new edge
+                edge = edge_file.readline()
+                if edge:
+                    edge = edge.strip().split(",")
+            
+        #graph_label
+        if graph_label != "\n":
+            G_label = int(graph_label)
+        graph_label = graph_label_file.readline()
+        
+        #graph attributes
+        if graph_attributes:        
+            G_attributes = attributes_to_np_array(graph_attribute)
+            graph_attribute = graph_attribute_file.readline()
+        
+        
+        #returns list of the graphs of the db, together with graph label list and possibly graph_attributes or an empty list of there are no attributes
+        yield (G, G_label, G_attributes)
+   
+    """
+    #close all files
+    edge_file.close()
+    graph_indicator.close()
+    graph_label_file.close()
+    
+    if node_labels:
+        node_label_file.close()
+    if edge_labels:
+        edge_label_file.close()
+    if edge_attributes:
+        edge_attribute_file.close()
+    if node_attributes:
+        node_attribute_file.close()
+    if graph_attributes:
+        graph_attribute_file.close()
+     """   
+
+
 #node label from node_id
 def node_label_vector(graph, node_id):
     '''
