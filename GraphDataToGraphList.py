@@ -293,7 +293,6 @@ def graph_data_generator(path, db):
         #returns list of the graphs of the db, together with graph label list and possibly graph_attributes or an empty list of there are no attributes
         yield (G, G_label, G_attributes)
    
-    """
     #close all files
     edge_file.close()
     graph_indicator.close()
@@ -309,7 +308,6 @@ def graph_data_generator(path, db):
         node_attribute_file.close()
     if graph_attributes:
         graph_attribute_file.close()
-     """   
 
 
 #node label from node_id
